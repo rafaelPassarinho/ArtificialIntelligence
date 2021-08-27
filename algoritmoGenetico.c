@@ -3,16 +3,17 @@
 #include <math.h>
 #include <time.h>
 #define POP 6
+#define NUM_GER 100
 
 typedef struct Cromossomo{		//definindo a estrutura do cromossomo
 	short int bit[44];
-	int aptidao;
+	float aptidao;
 }cromossomo;
 
 void inicializaPop(cromossomo popAtual[POP]);
-int x(cromossomo popAtual);
-int y(cromossomo popAtual);
-int z(int x, int y);		
+float x(cromossomo popAtual);
+float y(cromossomo popAtual);
+float z(float x, float y);		
 
 int main(){
 	srandom(time(NULL));
@@ -22,9 +23,16 @@ int main(){
 	cromossomo popProxima[POP];	//criamos cromossos para prox população
 	
 	inicializaPop(popAtual);	//pop iniciada com bits aleatórios e sua aptidão definida
+
+	for (i = 0; i < NUM_GER; i++){
+		printf("Geração %d:\n", i);
+	}
+	
+
+	return 0;
 }
 
-void inicializaPop(cromossomo popAtual[POP]){
+void inicializaPop(cromossomo popAtual[POP]){	//função responsável por popular os cromossomos e atribuir valor aptidão a cada um
 	int i, j;
 	int numAleatorio;
 	
@@ -34,18 +42,23 @@ void inicializaPop(cromossomo popAtual[POP]){
 			popAtual[i].bit[j] = numAleatorio;
 		}
 		printf("cromossomo[%d] = ", i);
+
 		for (j = 0; j < 44; j++)
 			printf("%d", popAtual[i].bit[j]);
-		int vx = x(popAtual[i]);
-		int vy = y(popAtual[i]);
-		printf(" x = %d, y = %d", vx, vy);
+		
+		float vx = x(popAtual[i]);	//retorna o valor de x e y, insere o valor de f6(x,y) em aptdão
+		float vy = y(popAtual[i]);
+		float f6 = z(vx,vy);
+		popAtual[i].aptidao = f6;
+
+		printf(" x = %f, y = %f, z = %f ", vx, vy, popAtual[i].aptidao);
 		printf("\n");
 	}
 }
 
-int x(cromossomo popAtual){		//função responsavel por retornar o x do cromossomo
+float x(cromossomo popAtual){	//função responsavel por transformar os bits[0-21](x) em real
 	int i;
-	int valorX = 0;
+	float valorX = 0;
 	int expoente = 0;
 	
 	for (i = 21; i >= 0; i--){	//aplica mudança de base binária para decimal no índice 21 até 0, menos significativo para mais sig.
@@ -53,17 +66,35 @@ int x(cromossomo popAtual){		//função responsavel por retornar o x do cromosso
 			valorX += pow(2, expoente);
 		expoente++;
 	}
+	valorX *= 200/(pow(2,22)-1);
+	valorX += -100;
+
 	return valorX;
 }
 
-int y(cromossomo popAtual){
+float y(cromossomo popAtual){	//função responsavel por converter bit[22-43](y) para real
 	int i;
-	int valorY = 0, expoente = 0;
+	float valorY = 0;
+	int expoente = 0;
 	
-	for(i = 43; i >= 22; i--){
+	for(i = 43; i >= 22; i--){	//aplica mudança de base binária para decimal no índice 43 até 22, menos significativo para mais sig.
 		if (popAtual.bit[i] == 1)
 			valorY += pow(2, expoente);
 		expoente++;
 	}
+	valorY *= 200/(pow(2,22)-1);
+	valorY += -100;
+
 	return valorY;
+}
+
+float z(float x, float y){	//retorna o resultado de f6(x,y)
+	float resultado;
+	float dividendo, divisor;
+
+	dividendo = pow(sin((double)sqrtf(x*x + y*y)),2) - 0.5;
+	divisor = pow(1.0 +0.001*(x*x + y*y),2);
+	resultado = 0.5 - dividendo/divisor;
+	
+	return resultado;
 }
