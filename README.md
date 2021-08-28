@@ -1,4 +1,4 @@
-Primeiro projeto dedidado para a prática de implementação de algoritmo genético para maximização de funções matemáticas.
+Primeiro projeto dedidado para a prática de implementação de algoritmo genético para maximização de funções matemáticas. [Não finalizado ainda]
 
 ~~~~~~~~~~~~~~~~~~~~funções implementadas~~~~~~~~~~~~~~~~~~~~
 *inicializaPop(cromossomo popAtual[POP]) => 100%
