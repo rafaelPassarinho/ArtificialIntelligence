@@ -3,7 +3,7 @@
 #include <math.h>
 #include <time.h>
 #define POP 6
-#define NUM_GER 100
+#define NUM_GER 1
 
 typedef struct Cromossomo{		//definindo a estrutura do cromossomo
 	short int bit[44];
@@ -14,10 +14,12 @@ void inicializaPop(cromossomo popAtual[POP]);
 float x(cromossomo popAtual);
 float y(cromossomo popAtual);
 float z(float x, float y);		
+void listaRoleta(int *, cromossomo popAtual[POP]);
 
 int main(){
 	srandom(time(NULL));
 	int i, j;
+	int roleta[POP];
 	
 	cromossomo popAtual[POP];	//criamos cromossos para população atual
 	cromossomo popProxima[POP];	//criamos cromossos para prox população
@@ -26,9 +28,10 @@ int main(){
 
 	for (i = 0; i < NUM_GER; i++){
 		printf("Geração %d:\n", i);
+
+		listaRoleta(roleta, popAtual);	//função que aplica seleção por roleta e "retorna" um vetor de pares de pais
 	}
 	
-
 	return 0;
 }
 
@@ -46,7 +49,7 @@ void inicializaPop(cromossomo popAtual[POP]){	//função responsável por popula
 		for (j = 0; j < 44; j++)
 			printf("%d", popAtual[i].bit[j]);
 		
-		float vx = x(popAtual[i]);	//retorna o valor de x e y, insere o valor de f6(x,y) em aptdão
+		float vx = x(popAtual[i]);	//retorna o valor de x e y, insere o valor de f6(x,y) em aptidão
 		float vy = y(popAtual[i]);
 		float f6 = z(vx,vy);
 		popAtual[i].aptidao = f6;
@@ -97,4 +100,24 @@ float z(float x, float y){	//retorna o resultado de f6(x,y)
 	resultado = 0.5 - dividendo/divisor;
 	
 	return resultado;
+}
+
+void listaRoleta(int *vetor, cromossomo popAtual[POP]){	//função responsavel por aplicar seleção por roleta
+	int i, j;
+	float maxAptidao = 0, numAleatorio = 0, somaAptidao = 0;
+
+	for (i = 0; i < POP; i++)
+		maxAptidao += popAtual[i].aptidao;
+	for (i = 0; i < POP; i++){
+		numAleatorio = ((float)rand()/(float)(RAND_MAX)) * maxAptidao;	//numAle recebe um float random no intervalo [0-somaAptid]
+		
+		somaAptidao = 0;
+		j = 0;
+		while(somaAptidao < numAleatorio){
+			somaAptidao += popAtual[j].aptidao;
+			j++;
+		}
+		vetor[i] = j-1;
+	}
+	
 }
