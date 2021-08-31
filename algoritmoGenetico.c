@@ -28,8 +28,8 @@ int main(){
 	int roleta[POP];
 	float valorX, valorY, f6;
 	
-	cromossomo popAtual[POP];	//criamos cromossos para população atual
-	cromossomo popProxima[POP];	//criamos cromossos para prox população
+	cromossomo popAtual[POP];	//criamos cromossomos para população atual
+	cromossomo popProxima[POP];	//criamos cromossomos para prox população
 	cromossomo mCromossomo;
 	
 	inicializaPop(popAtual);	//pop iniciada com bits aleatórios e sua aptidão definida
@@ -178,8 +178,8 @@ void mutacao(cromossomo *popAtual){
 
 	for (i = 0; i < POP; i++){
 		for(j = 0; j < 44; j++){
-			numMutacao = ((float)random()/(float)(RAND_MAX));
-			if(numMutacao <= TAXA_MUTACAO){
+			numMutacao = ((float)random()/(float)(RAND_MAX));	//numMutação define se ocorre a troca de bits do cromossomo
+			if(numMutacao <= TAXA_MUTACAO){						//se numMutacao for <= a TAXA, os bits devem ser trocados
 				if(popAtual[i].bit[j] == 0){
 					popAtual[i].bit[j] = 1;
 				}else{
@@ -190,8 +190,8 @@ void mutacao(cromossomo *popAtual){
 	}
 }
 
-void melhorCromossomo(cromossomo *mCromossomo,cromossomo *populacao){
-	int i, j;
+void melhorCromossomo(cromossomo *mCromossomo,cromossomo *populacao){	//func que percorre o vetor de struct da geração e retorna
+	int i, j;															//o cromossomo com maior aptidão
 
 	mCromossomo->aptidao = populacao[0].aptidao;
 	for (i = 0; i < POP; i++){
@@ -204,9 +204,9 @@ void melhorCromossomo(cromossomo *mCromossomo,cromossomo *populacao){
 	}
 }
 
-void elitismo(cromossomo *melhorPai, cromossomo *popAtual){
-	cromossomo mFilho;
-	int numAleatorio, i;
+void elitismo(cromossomo *melhorPai, cromossomo *popAtual){	//função que aplica o conceito de elitismo. Caso o melhor cromossomo da
+	cromossomo mFilho;										//geração passada seja melhor que o da geração atual. Ele será inserido dentro
+	int numAleatorio, i;									//da proxima geração
 
 	melhorCromossomo(&mFilho, popAtual);
 
