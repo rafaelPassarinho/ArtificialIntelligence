@@ -155,7 +155,7 @@ void crossover(int *lista, cromossomo *popAtual, cromossomo *popProxima){
 			pontoCorte = (random()%44) + 1;	//numAleatorio será o ponto de corte para a cabeça e cauda do crossover
 			numCrossover = ((float)random()/(float)(RAND_MAX));
 			
-			if(numCrossover > TAXA_CROSSOVER){
+			if(numCrossover <= TAXA_CROSSOVER){
 				for (j = 0; j < pontoCorte; j++){	//faz o crossover da "cabeça" do crossomo
 					popProxima[i].bit[j] = popAtual[lista[i]].bit[j];	//crossover filho 1
 					popProxima[i+1].bit[j] = popAtual[lista[i+1]].bit[j];	//crossover filho 2		
