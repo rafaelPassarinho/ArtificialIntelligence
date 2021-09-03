@@ -143,6 +143,7 @@ void listaRoleta(int *vetor, cromossomo popAtual[POP]){	//função responsavel p
 
 	for (i = 0; i < POP; i++)
 		maxAptidao += popAtual[i].aptidao;
+
 	for (i = 0; i < POP; i++){
 		numAleatorio = ((float)random()/(float)(RAND_MAX)) * maxAptidao;	//numAle recebe um float random no intervalo [0-somaAptid]
 		
@@ -190,11 +191,7 @@ void mutacao(cromossomo *popAtual){
 		for(j = 0; j < 44; j++){
 			numMutacao = ((float)random()/(float)(RAND_MAX));	//numMutação define se ocorre a troca de bits do cromossomo
 			if(numMutacao <= TAXA_MUTACAO){						//se numMutacao for <= a TAXA, os bits devem ser trocados
-				if(popAtual[i].bit[j] == 0){
-					popAtual[i].bit[j] = 1;
-				}else{
-					popAtual[i].bit[j] = 0;
-				}
+				popAtual[i].bit[j] = 1 - popAtual[i].bit[j];
 			}
 		}
 	}
@@ -215,7 +212,7 @@ void melhorCromossomo(cromossomo *mCromossomo,cromossomo *populacao){	//func que
 }
 
 void elitismo(cromossomo *melhorPai, cromossomo *popAtual){	//função que aplica o conceito de elitismo. Caso o melhor cromossomo da
-	cromossomo mFilho;										//geração passada seja melhor que o da geração atual. Ele será inserido dentro
+	cromossomo mFilho;                                      //geração passada seja melhor que o da geração atual. Ele será inserido dentro
 	int numAleatorio, i;									//da proxima geração
 
 	melhorCromossomo(&mFilho, popAtual);
