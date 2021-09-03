@@ -12,11 +12,11 @@ typedef struct Cromossomo{		//definindo a estrutura do cromossomo
 	float aptidao;
 }cromossomo;
 
-void inicializaPop(cromossomo popAtual[POP]);
+void inicializaPop(cromossomo *);
 float x(cromossomo popAtual);
 float y(cromossomo popAtual);
 float z(float x, float y);		
-void listaRoleta(int *, cromossomo popAtual[POP]);	//função que aplica seleção por roleta e "retorna" um vetor de pares de pais
+void listaRoleta(int *, cromossomo *);	//função que aplica seleção por roleta e "retorna" um vetor de pares de pais
 void crossover(int *, cromossomo *, cromossomo *);	//função que aplica o crossover baseado na lista de pares da roleta
 void mutacao(cromossomo *);							//função que aplica a mutação de bits dependendo da TAXA_MUTACAO
 void melhorCromossomo(cromossomo *, cromossomo *);	//função que retorna o melhor cromossomo de uma população
@@ -77,7 +77,7 @@ int main(){
 	return 0;
 }
 
-void inicializaPop(cromossomo popAtual[POP]){	//função responsável por popular os cromossomos e atribuir valor aptidão a cada um
+void inicializaPop(cromossomo *popAtual){	//função responsável por popular os cromossomos e atribuir valor aptidão a cada um
 	int i, j;
 	int numAleatorio;
 	
@@ -137,7 +137,7 @@ float z(float x, float y){	//retorna o resultado de f6(x,y)
 	return resultado;
 }
 
-void listaRoleta(int *vetor, cromossomo popAtual[POP]){	//função responsavel por aplicar seleção por roleta
+void listaRoleta(int *vetor, cromossomo *popAtual){	//função responsavel por aplicar seleção por roleta
 	int i, j;
 	float maxAptidao = 0, numAleatorio = 0, somaAptidao = 0;
 
