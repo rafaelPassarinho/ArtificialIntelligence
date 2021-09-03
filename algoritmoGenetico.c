@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#define POP 200
-#define NUM_GER 100
+#define POP 100
+#define NUM_GER 400
 #define TAXA_CROSSOVER 0.65
 #define TAXA_MUTACAO 0.008
 
@@ -26,7 +26,7 @@ int main(){
 	srandom(time(NULL));
 	int i, j;
 	int roleta[POP];
-	float valorX, valorY, f6;
+	float valorX, valorY, f6, mediaPop = 0;
 	
 	cromossomo popAtual[POP];	//criamos cromossomos para população atual
 	cromossomo popProxima[POP];	//criamos cromossomos para prox população
@@ -34,11 +34,17 @@ int main(){
 	
 	inicializaPop(popAtual);	//pop iniciada com bits aleatórios e sua aptidão definida
 	melhorCromossomo(&mCromossomo, popAtual);
+
 	printf("Melhor cromossomo: ");
 	for (i = 0; i < 44; i++)
 		printf("%d", mCromossomo.bit[i]);
-	printf(" aptidão: %f\n", mCromossomo.aptidao);
+	for (i = 0; i < POP; i++)
+		mediaPop += popAtual[i].aptidao;
+	mediaPop /= POP;
+	printf(" médiaPop: %f aptidão: %f\n", mediaPop, mCromossomo.aptidao);
+
 	for (i = 0; i < NUM_GER; i++){
+		mediaPop = 0;
 		printf("Geração %d:\n", i);
 		listaRoleta(roleta, popAtual);	
 		crossover(roleta, popAtual, popProxima); 
@@ -56,12 +62,16 @@ int main(){
 		for (j = 0; j < POP; j++)	//passa os cromossomos de popProxima para popAtual
 			popAtual[j] = popProxima[j];
 		melhorCromossomo(&mCromossomo, popAtual);
+
 		printf("Melhor cromossomo: ");
 		for (j = 0; j < 44; j++)
 			printf("%d", mCromossomo.bit[j]);
 		valorX = x(mCromossomo);
 		valorY = y(mCromossomo);
-		printf(" x = %f, y = %f aptidão: %f\n", valorX, valorY, mCromossomo.aptidao);
+		for(j = 0; j < POP; j++)
+			mediaPop += popAtual[j].aptidao;
+		mediaPop /= POP;
+		printf(" mediaPop: %f, x = %f, y = %f aptidão: %f\n", mediaPop, valorX, valorY, mCromossomo.aptidao);
 	}
 	
 	return 0;
