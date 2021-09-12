@@ -1,3 +1,2 @@
-Primeiro projeto dedidado para a prática de implementação de algoritmo genético para maximização de funções matemáticas de duas variáveis. O algoritmo em C utiliza de seleção por roleta para a formação de pares para o crossover. O código utiliza de elitismo para garantir que não ocorra queda de aptidão entre as gerações 
-
+First project is dedicated to implement a genetic algorithm that finds a maximum value of a mathematic function with two variables given a certain domain. The C algorithm uses roulette selection to form pairs for the crossover. The code uses elitism to ensure that there is no fall in fitness as the generations goes by.
 

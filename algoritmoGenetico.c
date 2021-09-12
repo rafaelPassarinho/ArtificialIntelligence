@@ -3,225 +3,225 @@
 #include <math.h>
 #include <time.h>
 #define POP 100
-#define NUM_GER 400
-#define TAXA_CROSSOVER 0.65
-#define TAXA_MUTACAO 0.008
+#define NUM_GEN 4000
+#define CROSSOVER_RATE 0.65
+#define MUTATION_RATE 0.08
 
-typedef struct Cromossomo{		//definindo a estrutura do cromossomo
+typedef struct Chrom{		//defining Chromosome struct
 	short int bit[44];
-	float aptidao;
-}cromossomo;
+	float fitness;
+}chrom;
 
-void inicializaPop(cromossomo *);
-float x(cromossomo popAtual);
-float y(cromossomo popAtual);
+void popInitialization(chrom *);
+float x(chrom currentPop);
+float y(chrom currentPop);
 float z(float x, float y);		
-void listaRoleta(int *, cromossomo *);	//função que aplica seleção por roleta e "retorna" um vetor de pares de pais
-void crossover(int *, cromossomo *, cromossomo *);	//função que aplica o crossover baseado na lista de pares da roleta
-void mutacao(cromossomo *);							//função que aplica a mutação de bits dependendo da TAXA_MUTACAO
-void melhorCromossomo(cromossomo *, cromossomo *);	//função que retorna o melhor cromossomo de uma população
-void elitismo(cromossomo *, cromossomo *); 			//aplica conceito de elitismo à pop de filhos
+void listRoulette(int *, chrom *);	//function that applies roulette selection and "returns" a vector with parents couples
+void crossover(int *, chrom *, chrom *);	//function that applies crossover based upon a parents couples list
+void mutation(chrom *);						//function that applies mutation based on MUTATION_RATE
+void bestChrom(chrom *, chrom *);	//function that returns the best chromosome of a population
+void elitism(chrom *, chrom *); 			//applies elitism to the next population
 
-int main(){
+int main(){				//main function
 	srandom(time(NULL));
 	int i, j;
-	int roleta[POP];
-	float valorX, valorY, f6, mediaPop = 0;
+	int roulette[POP];
+	float xValue, yValue, f6, popMean = 0;
 	
-	cromossomo popAtual[POP];	//criamos cromossomos para população atual
-	cromossomo popProxima[POP];	//criamos cromossomos para prox população
-	cromossomo mCromossomo;
+	chrom currentPop[POP];	//we create choromosomes for current population
+	chrom nextPop[POP];	//we create chromosomes for next population
+	chrom bChrom;
 	
-	inicializaPop(popAtual);	//pop iniciada com bits aleatórios e sua aptidão definida
-	melhorCromossomo(&mCromossomo, popAtual);
+	popInitialization(currentPop);	//population initialized with random bits and thei fitness is calculated for each chrom
+	bestChrom(&bChrom, currentPop);	//best chromosome returned from current population
 
-	printf("Melhor cromossomo: ");
+	printf("Best Chromosome: ");	//print out the best chromosome from the original population
 	for (i = 0; i < 44; i++)
-		printf("%d", mCromossomo.bit[i]);
+		printf("%d", bChrom.bit[i]);
 	for (i = 0; i < POP; i++)
-		mediaPop += popAtual[i].aptidao;
-	mediaPop /= POP;
-	printf(" médiaPop: %f aptidão: %f\n", mediaPop, mCromossomo.aptidao);
+		popMean += currentPop[i].fitness;
+	popMean /= POP;
+	printf(" Population mean: %f fitness: %f\n", popMean, bChrom.fitness);
 
-	for (i = 0; i < NUM_GER; i++){
-		mediaPop = 0;
-		printf("Geração %d:\n", i);
-		listaRoleta(roleta, popAtual);	
-		crossover(roleta, popAtual, popProxima); 
-		mutacao(popProxima);
+	for (i = 0; i < NUM_GEN; i++){
+		popMean = 0;
+		printf("Generation %d:\n", i);
+		listRoulette(roulette, currentPop);	
+		crossover(roulette, currentPop, nextPop); 
+		mutation(nextPop);
 
-		for(j = 0; j < POP; j++){	//define a aptidão da população de filhos
-			valorX = x(popProxima[j]);
-			valorY = y(popProxima[j]);
-			f6 = z(valorX, valorY);
+		for(j = 0; j < POP; j++){	//defines fitness for next population
+			xValue = x(nextPop[j]);
+			yValue = y(nextPop[j]);
+			f6 = z(xValue, yValue);
 
-			popProxima[j].aptidao = f6;
+			nextPop[j].fitness = f6;
 		}
-		elitismo(&mCromossomo, popProxima);
+		elitism(&bChrom, nextPop);
 
-		for (j = 0; j < POP; j++)	//passa os cromossomos de popProxima para popAtual
-			popAtual[j] = popProxima[j];
-		melhorCromossomo(&mCromossomo, popAtual);
+		for (j = 0; j < POP; j++)	//passes chromosomes from nextPop[] to currentPop[]
+			currentPop[j] = nextPop[j];
+		bestChrom(&bChrom, currentPop);
 
-		printf("Melhor cromossomo: ");
+		printf("Best Chromosome: ");
 		for (j = 0; j < 44; j++)
-			printf("%d", mCromossomo.bit[j]);
-		valorX = x(mCromossomo);
-		valorY = y(mCromossomo);
+			printf("%d", bChrom.bit[j]);
+		xValue = x(bChrom);
+		yValue = y(bChrom);
 		for(j = 0; j < POP; j++)
-			mediaPop += popAtual[j].aptidao;
-		mediaPop /= POP;
-		printf(" mediaPop: %f, x = %f, y = %f aptidão: %f\n", mediaPop, valorX, valorY, mCromossomo.aptidao);
+			popMean += currentPop[j].fitness;
+		popMean /= POP;
+		printf(" Population mean: %f, x = %f, y = %f fitness: %f\n", popMean, xValue, yValue, bChrom.fitness);
 	}
 	
 	return 0;
 }
 
-void inicializaPop(cromossomo *popAtual){	//função responsável por popular os cromossomos e atribuir valor aptidão a cada um
+void popInitialization(chrom *currentPop){	//function responsible for populate the chromosomes and atribute a fitness value for each one
 	int i, j;
-	int numAleatorio;
+	int randomNum;
 	
 	for (i = 0; i < POP; i++){
-		for (j = 0; j < 44; j++){	//popula os cromossomos com 1-0 aleatório
-			numAleatorio = random()% 2;
-			popAtual[i].bit[j] = numAleatorio;
+		for (j = 0; j < 44; j++){	//populates each chromosome with random 0-1
+			randomNum = random()% 2;
+			currentPop[i].bit[j] = randomNum;
 		}
 		
-		float vx = x(popAtual[i]);	//retorna o valor de x e y, insere o valor de f6(x,y) em aptidão
-		float vy = y(popAtual[i]);
-		float f6 = z(vx,vy);
-		popAtual[i].aptidao = f6;
+		float xValue = x(currentPop[i]);	//return x, y values and insert f6(x,y) in fitness
+		float yValue = y(currentPop[i]);
+		float f6 = z(xValue,yValue);
+		currentPop[i].fitness = f6;
 	}
 }
 
-float x(cromossomo popAtual){	//função responsavel por transformar os bits[0-21](x) em real
+float x(chrom currentPop){	//function responsible for converting the bits from [0-21](x) to decimal
 	int i;
-	float valorX = 0;
-	int expoente = 0;
+	float xValue = 0;
+	int exponent = 0;
 	
-	for (i = 21; i >= 0; i--){	//aplica mudança de base binária para decimal no índice 21 até 0, menos significativo para mais sig.
-		if(popAtual.bit[i] == 1)
-			valorX += pow(2, expoente);
-		expoente++;
+	for (i = 21; i >= 0; i--){	//applies base change from index 21 to 0. From least significant to most significant
+		if(currentPop.bit[i] == 1)
+			xValue += pow(2, exponent);
+		exponent++;
 	}
-	valorX *= 200/(pow(2,22)-1);
-	valorX += -100;
+	xValue *= 200/(pow(2,22)-1);
+	xValue += -100;
 
-	return valorX;
+	return xValue;
 }
 
-float y(cromossomo popAtual){	//função responsavel por converter bit[22-43](y) para real
+float y(chrom currentPop){	//function responsible for converting the bits from [22-43](y) to decimal
 	int i;
-	float valorY = 0;
-	int expoente = 0;
+	float yValue = 0;
+	int exponent = 0;
 	
-	for(i = 43; i >= 22; i--){	//aplica mudança de base binária para decimal no índice 43 até 22, menos significativo para mais sig.
-		if (popAtual.bit[i] == 1)
-			valorY += pow(2, expoente);
-		expoente++;
+	for(i = 43; i >= 22; i--){	//applies base change from index 43 to 22. From least significant to most significant
+		if (currentPop.bit[i] == 1)
+			yValue += pow(2, exponent);
+		exponent++;
 	}
-	valorY *= 200/(pow(2,22)-1);
-	valorY += -100;
+	yValue *= 200/(pow(2,22)-1);
+	yValue += -100;
 
-	return valorY;
+	return yValue;
 }
 
-float z(float x, float y){	//retorna o resultado de f6(x,y)
-	float resultado;
-	float dividendo, divisor;
+float z(float x, float y){	//returns f6(x,y) value
+	float result;
+	float dividend, divisor;
 
-	dividendo = pow(sin((double)sqrtf(x*x + y*y)),2) - 0.5;
+	dividend = pow(sin((double)sqrtf(x*x + y*y)),2) - 0.5;
 	divisor = pow(1.0 +0.001*(x*x + y*y),2);
-	resultado = 0.5 - dividendo/divisor;
+	result = 0.5 - dividend/divisor;
 	
-	return resultado;
+	return result;
 }
 
-void listaRoleta(int *vetor, cromossomo *popAtual){	//função responsavel por aplicar seleção por roleta
+void listRoulette(int *vector, chrom *currentPop){	//function responsible for applying roulette selection
 	int i, j;
-	float maxAptidao = 0, numAleatorio = 0, somaAptidao = 0;
+	float maxFitness = 0, randomNum = 0, sumFitness = 0;
 
 	for (i = 0; i < POP; i++)
-		maxAptidao += popAtual[i].aptidao;
+		maxFitness += currentPop[i].fitness;
 
 	for (i = 0; i < POP; i++){
-		numAleatorio = ((float)random()/(float)(RAND_MAX)) * maxAptidao;	//numAle recebe um float random no intervalo [0-somaAptid]
+		randomNum = ((float)random()/(float)(RAND_MAX)) * maxFitness;	//randomNum receives a random float in the range [0-sumFitness]
 		
-		somaAptidao = 0;
+		sumFitness = 0;
 		j = 0;
-		while(somaAptidao < numAleatorio){
-			somaAptidao += popAtual[j].aptidao;
+		while(sumFitness < randomNum){
+			sumFitness += currentPop[j].fitness;
 			j++;
 		}
-		vetor[i] = j-1;
+		vector[i] = j-1;
 	}
 	
 }
 
-void crossover(int *lista, cromossomo *popAtual, cromossomo *popProxima){
-	int i, j, pontoCorte;
-	float  numCrossover, valorX, valorY, valorZ;
-	for (i = 0; i < POP; i++){	//for que percorre cada cromossomo da população
+void crossover(int *list, chrom *currentPop, chrom *nextPop){
+	int i, j, crossoverPoint;
+	float  crossoverNum;
+	for (i = 0; i < POP; i++){	//walks each chromosome of the population
 		if(i % 2 == 0){
-			pontoCorte = (random()%44) + 1;	//numAleatorio será o ponto de corte para a cabeça e cauda do crossover
-			numCrossover = ((float)random()/(float)(RAND_MAX));
+			crossoverPoint = (random()%44) + 1;	//crossoverPoint will be the random cut point between "head" and "tail" from the chromosome
+			crossoverNum = ((float)random()/(float)(RAND_MAX)); 
 			
-			if(numCrossover <= TAXA_CROSSOVER){
-				for (j = 0; j < pontoCorte; j++){	//faz o crossover da "cabeça" do crossomo
-					popProxima[i].bit[j] = popAtual[lista[i]].bit[j];	//crossover filho 1
-					popProxima[i+1].bit[j] = popAtual[lista[i+1]].bit[j];	//crossover filho 2		
+			if(crossoverNum <= CROSSOVER_RATE){	//if crossoverNum is between [0,CROSSOVER_RATE] the crossover happens
+				for (j = 0; j < crossoverPoint; j++){	//crossing the bits above the cross point index
+					nextPop[i].bit[j] = currentPop[list[i]].bit[j];	//crossover child 1
+					nextPop[i+1].bit[j] = currentPop[list[i+1]].bit[j];	//crossover child 2		
 				}
-				for (j = pontoCorte; j < 44; j++){	//faz o crossover da "cauda" do cromossomo
-					popProxima[i].bit[j] = popAtual[lista[i+1]].bit[j];	//crossover filho 1
-					popProxima[i+1].bit[j] = popAtual[lista[i]].bit[j];	//crossover filho 2
+				for (j = crossoverPoint; j < 44; j++){	//crossing the bits below the cross point index 
+					nextPop[i].bit[j] = currentPop[list[i+1]].bit[j];	//crossover child 1
+					nextPop[i+1].bit[j] = currentPop[list[i]].bit[j];	//crossover child 2
 				}
-			}else{				//copia os genitores
-				popProxima[i] = popAtual[lista[i]];
-				popProxima[i+1] = popAtual[lista[i]];
+			}else{				//else, copy the parents
+				nextPop[i] = currentPop[list[i]];
+				nextPop[i+1] = currentPop[list[i]];
 			}
 		}
 	}
 }
 
-void mutacao(cromossomo *popAtual){
+void mutation(chrom *currentPop){
 	int i, j;
-	float numMutacao;
+	float mutationNum;
 
 	for (i = 0; i < POP; i++){
 		for(j = 0; j < 44; j++){
-			numMutacao = ((float)random()/(float)(RAND_MAX));	//numMutação define se ocorre a troca de bits do cromossomo
-			if(numMutacao <= TAXA_MUTACAO){						//se numMutacao for <= a TAXA, os bits devem ser trocados
-				popAtual[i].bit[j] = 1 - popAtual[i].bit[j];
+			mutationNum = ((float)random()/(float)(RAND_MAX));	//mutationNum defines if a bit from the chromossome will mutate
+			if(mutationNum <= MUTATION_RATE){					//if mutationNum is less than MUTATION_RATE, the bit will be inverted for <= a TAXA, os bits devem ser trocados
+				currentPop[i].bit[j] = 1 - currentPop[i].bit[j];
 			}
 		}
 	}
 }
 
-void melhorCromossomo(cromossomo *mCromossomo,cromossomo *populacao){	//func que percorre o vetor de struct da geração e retorna
-	int i, j;															//o cromossomo com maior aptidão
+void bestChrom(chrom *bChrom,chrom *population){	//function that walks the struct vector of population and returns the chromosome if greatest fitness
+	int i, j;
 
-	mCromossomo->aptidao = populacao[0].aptidao;
+	bChrom->fitness = population[0].fitness;
 	for (i = 0; i < POP; i++){
-		if (mCromossomo->aptidao < populacao[i].aptidao){
+		if (bChrom->fitness < population[i].fitness){
 			for (j = 0; j < 44; j++)
-				mCromossomo->bit[j] = populacao[i].bit[j];
-			mCromossomo->aptidao = populacao[i].aptidao;
+				bChrom->bit[j] = population[i].bit[j];
+			bChrom->fitness = population[i].fitness;
 		}
 		
 	}
 }
 
-void elitismo(cromossomo *melhorPai, cromossomo *popAtual){	//função que aplica o conceito de elitismo. Caso o melhor cromossomo da
-	cromossomo mFilho;                                      //geração passada seja melhor que o da geração atual. Ele será inserido dentro
-	int numAleatorio, i;									//da proxima geração
+void elitism(chrom *bestParent, chrom *currentPop){	//function that applies the concept of elitism. If the best chromosome from current population has a better fitness than the one from next pop,
+	chrom bestChild;								//he will be inserted in the next population
+	int randomNum, i;
 
-	melhorCromossomo(&mFilho, popAtual);
+	bestChrom(&bestChild, currentPop);
 
-	if(mFilho.aptidao < melhorPai->aptidao){
-		numAleatorio = random()%POP;
+	if(bestChild.fitness < bestParent->fitness){
+		randomNum = random()%POP;
 
 		for(i = 0; i < 44; i++)
-			popAtual[numAleatorio].bit[i] = melhorPai->bit[i];
-		popAtual[numAleatorio].aptidao = melhorPai->aptidao;
+			currentPop[randomNum].bit[i] = bestParent->bit[i];
+		currentPop[randomNum].fitness = bestParent->fitness;
 	}
 }
