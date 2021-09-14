@@ -1,15 +1,31 @@
 #make file
 
+PROJ_NAME = geneticAlgorithm
+
+# .c files
+C_SOURCE = $(wildcard *.c)
+
+# Object files
+OBJ =  $(C_SOURCE: .c = .o)
+
+# Compiler
 CC = gcc
-CFLAGS = -lm
-TARGET = algoritmoGenetico
 
-all: $(TARGET).o
-	$(CC) -o $(TARGET) $(TARGET).c $(CFLAGS)
+# Flags for compiler
+CC_FLAGS = -lm
 
+all: $(PROJ_NAME)
+
+$(PROJ_NAME): $(OBJ)
+	$(CC) -o $@ $^ $(CC_FLAGS)
+
+%.o: %.c
+	$(CC) -o $@ $< $(CC_FLAGS)
+
+.PHONY: all clean
 
 clean:
-	rm *o
+	rm -rf *.o *~
 	
 run:
-	./$(TARGET)
+	./$(PROJ_NAME)
